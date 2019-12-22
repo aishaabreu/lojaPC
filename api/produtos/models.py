@@ -14,27 +14,27 @@ class Produto(models.Model):
 
 
 class Processador(Produto):
-    AMD = 'amd'
-    INTEL = 'intel'
+    AMD = "amd"
+    INTEL = "intel"
 
     OPCOES_MARCAS = (
-        (AMD, 'AMD'),
-        (INTEL, 'Intel')
+        (AMD, "AMD"),
+        (INTEL, "Intel")
     )
 
     class Meta:
-        verbose_name_plural = 'Processadores'
+        verbose_name_plural = "Processadores"
 
     marca = models.CharField(choices=OPCOES_MARCAS, max_length=5)
 
 
 class PlacaMae(Produto):
     class Meta:
-        verbose_name = 'Placa Mãe'
-        verbose_name_plural = 'Placas Mãe'
+        verbose_name = "Placa Mãe"
+        verbose_name_plural = "Placas Mãe"
 
     processadores_suportados = models.ManyToManyField(
-        Processador, related_name='placas_com_suporte')
+        Processador, related_name="placas_com_suporte")
     slots_memoria = models.PositiveSmallIntegerField(
         verbose_name="Qtde. slots de memória RAM"
     )
@@ -56,8 +56,8 @@ class MemoriaRam(Produto):
     )
 
     class Meta:
-        verbose_name = 'Memória RAM'
-        verbose_name_plural = 'Memórias RAM'
+        verbose_name = "Memória RAM"
+        verbose_name_plural = "Memórias RAM"
 
     tamanho = models.PositiveSmallIntegerField(
         choices=OPCOES_TAMANHOS
@@ -70,5 +70,5 @@ class MemoriaRam(Produto):
 
 class PlacaDeVideo(Produto):
     class Meta:
-        verbose_name = 'Placa de Vídeo'
-        verbose_name_plural = 'Placas de Vídeo'
+        verbose_name = "Placa de Vídeo"
+        verbose_name_plural = "Placas de Vídeo"

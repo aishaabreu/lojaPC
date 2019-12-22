@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
                 ('slots_memoria', models.PositiveSmallIntegerField(verbose_name='Qtde. slots de memória RAM')),
                 ('memoria_suportaca', models.PositiveSmallIntegerField(verbose_name='Total de memória RAM suportado')),
                 ('video_integrado', models.BooleanField(verbose_name='Vídeo Integrado')),
-                ('processadores_suportados', models.ManyToManyField(related_name='placas_com_suporte', to='computador.Processador')),
+                ('processadores_suportados', models.ManyToManyField(related_name='placas_com_suporte', to='produtos.Processador')),
             ],
             options={
                 'verbose_name': 'Placa Mãe',

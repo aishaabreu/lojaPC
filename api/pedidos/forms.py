@@ -1,21 +1,56 @@
 from django import forms
+from django.db.models import Sum
 from django.core.validators import ValidationError
 from .models import Computador, ComputadorMemoria
 
 
 class ComputadorMemoriaFormset(forms.BaseInlineFormSet):
-    def clean(self, *args, **kwargs):
+    def get_total_mem(self):
+        """
+            Calcula o total de slots e o total de memoria,
+            levando em consideração adições, edições e remoções.
+        """
+        slots = self.instance.memoria.count()
+        memoria = self.instance.memoria.aggregate(
+            total=Sum('memoria__tamanho'))['total'] or 0
+
         if hasattr(self, "cleaned_data"):
-            slots = 0
-            memoria = 0
+            slots_adicionais = 0
+            memoria_adicional = 0
+            memorias_cadastradas = {
+                mem.pk: mem.memoria.tamanho
+                for mem in self.instance.memoria.all()
+            }
             for form in self.cleaned_data:
-                if not form["DELETE"]:
-                    slots += 1
-                    memoria += form["memoria"].tamanho
-            if slots > self.instance.placa_mae.slots_memoria:
-                raise ValidationError("Excedio limite dos slots de memória da Placa Mãe.")
-            if memoria > self.instance.placa_mae.memoria_suportaca:
-                raise ValidationError("Excedio limite de memória da Placa Mãe.")
+                if form["DELETE"]:
+                    memorias_cadastradas.pop(form["id"].pk, None)
+                elif form["id"]:
+                    memorias_cadastradas[form["id"].pk] = form["memoria"].tamanho
+                else:
+                    slots_adicionais += 1
+                    memoria_adicional += form["memoria"].tamanho
+            slots = len(memorias_cadastradas.keys()) + slots_adicionais
+            memoria = sum(memorias_cadastradas.values()) + memoria_adicional
+
+        return slots, memoria
+
+    def clean(self, *args, **kwargs):
+        """
+            Validação das Memórias no Computador            
+            verifica as regras de negócio:
+                Deve haver sem uma memória RAM
+                Não ultrapassar limite dos slots de memória da placa mãe
+                Não ultrapassar limite de memória da placa mãe
+        """
+
+        slots, memoria = self.get_total_mem()
+
+        if not slots:
+            raise ValidationError("É obrigatório pelo menos uma Memória RAM.")
+        if slots > self.instance.placa_mae.slots_memoria:
+            raise ValidationError("Excedido limite dos slots de memória da Placa Mãe.")
+        if memoria > self.instance.placa_mae.memoria_suportaca:
+            raise ValidationError("Excedido limite de memória da Placa Mãe.")
         return super().clean(*args, **kwargs)
 
 

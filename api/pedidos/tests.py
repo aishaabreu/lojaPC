@@ -104,20 +104,17 @@ class PedidoAdminTest(TestCase):
             "processador": self.processador_intel.pk,
             "placa_mae": self.placa_mae_suporte_intel.pk,
             "placa_video": self.placa_video.pk,
-            "memoria-TOTAL_FORMS": 1,
+            "memoria-TOTAL_FORMS": 0,
             "memoria-INITIAL_FORMS": 0,
             "memoria-MIN_NUM_FORMS": 1,
-            "memoria-MAX_NUM_FORMS": 1000,
-            "memoria-0-id": "",
-            "memoria-0-computador": "",
-            "memoria-0-memoria": ""
+            "memoria-MAX_NUM_FORMS": 1000
         }
 
         response = self.client.post(
             reverse_lazy("admin:pedidos_computador_add"), data)
 
         self.assertFalse(Computador.objects.exists())
-        self.assertContains(response, "Este campo é obrigatório.")
+        self.assertContains(response, "É obrigatório pelo menos uma Memória RAM.")
 
     def test_posso_adicionar_varias_memorias_do_mesmo_tamanho(self):
         data = {
@@ -163,7 +160,7 @@ class PedidoAdminTest(TestCase):
             reverse_lazy("admin:pedidos_computador_add"), data)
 
         self.assertFalse(Computador.objects.exists())
-        self.assertContains(response, "Excedio limite dos slots de memória da Placa Mãe.")
+        self.assertContains(response, "Excedido limite dos slots de memória da Placa Mãe.")
 
     def test_nao_posso_exceder_a_memoria_suportada(self):
         data = {
@@ -182,7 +179,7 @@ class PedidoAdminTest(TestCase):
             reverse_lazy("admin:pedidos_computador_add"), data)
 
         self.assertFalse(Computador.objects.exists())
-        self.assertContains(response, "Excedio limite de memória da Placa Mãe.")
+        self.assertContains(response, "Excedido limite de memória da Placa Mãe.")
 
     def test_placa_de_video_obrigatorio_quando_nao_possui_video_integrado(self):
         data = {

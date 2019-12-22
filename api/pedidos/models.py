@@ -19,8 +19,8 @@ class Computador(models.Model):
     )
 
     def __str__(self):
-        return "{cliente} - {processador}({placa_mae})".format(
-            cliente=self.cliente.first_name,
+        return "{cliente} - {processador} ({placa_mae})".format(
+            cliente=self.cliente,
             processador=self.processador,
             placa_mae=self.placa_mae,
         )

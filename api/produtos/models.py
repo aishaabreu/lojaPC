@@ -65,7 +65,9 @@ class MemoriaRam(Produto):
 
     def __str__(self):
         return "{descricao} {tamanho} GB".format(
-            self.descricao, self.tamanho)
+            descricao=self.descricao,
+            tamanho=self.tamanho
+        )
 
 
 class PlacaDeVideo(Produto):

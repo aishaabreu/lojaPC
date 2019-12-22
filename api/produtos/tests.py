@@ -1,11 +1,12 @@
 from django.test import TestCase
 from django.urls import reverse_lazy
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from .models import Processador, PlacaMae, MemoriaRam, PlacaDeVideo
 
 
 class ProdutosAdminTest(TestCase):
     def setUp(self):
+        User = get_user_model()
         self.user = User.objects.create_superuser(
             "super_user", password="12#45678"
         )

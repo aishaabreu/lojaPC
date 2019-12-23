@@ -22,6 +22,33 @@ class ComputadorMemoriaSerializer(serializers.HyperlinkedModelSerializer):
         fields = ("url", "memoria",)
 
 
+class ComputadorVerboseSerializer(serializers.ModelSerializer):
+    memoria = serializers.SerializerMethodField()
+    cliente = serializers.SerializerMethodField()
+    processador = serializers.SerializerMethodField()
+    placa_mae = serializers.SerializerMethodField()
+    placa_video = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Computador
+        fields = "__all__"
+
+    def get_memoria(self, obj):
+        return [str(mem) for mem in obj.memoria.all()]
+
+    def get_cliente(self, obj):
+        return str(obj.cliente)
+
+    def get_processador(self, obj):
+        return str(obj.processador)
+
+    def get_placa_mae(self, obj):
+        return str(obj.placa_mae)
+
+    def get_placa_video(self, obj):
+        return str(obj.placa_video)
+
+
 class ComputadorSerializer(serializers.HyperlinkedModelSerializer):
     memoria = ComputadorMemoriaSerializer(many=True)
 

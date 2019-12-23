@@ -37,3 +37,6 @@ class ComputadorMemoria(models.Model):
         MemoriaRam, verbose_name="Memória RAM",
         on_delete=models.CASCADE, related_name="computador"
     )
+
+    def __str__(self):
+        return str(self.memoria)

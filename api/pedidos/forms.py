@@ -4,6 +4,13 @@ from django.core.validators import ValidationError
 from .models import Computador, ComputadorMemoria
 
 
+ERRO_MEMORIA_OBRIGATORIA = "É obrigatório pelo menos uma Memória RAM."
+ERRO_SLOTS_MEMORIA = "Excedido limite dos slots de memória da Placa Mãe."
+ERRO_LIMITE_MEMORIA = "Excedido limite de memória da Placa Mãe."
+ERRO_PLACA_MAE_INCOMPATIVEL = "Placa Mãe não tem suporte para este processador."
+ERRO_PLACA_VIDEO_OBRIGATORIA = "Placa de Vídeo obrigatória para esta Placa Mãe."
+
+
 class ComputadorMemoriaFormset(forms.BaseInlineFormSet):
     def get_total_mem(self):
         """
@@ -46,11 +53,11 @@ class ComputadorMemoriaFormset(forms.BaseInlineFormSet):
         slots, memoria = self.get_total_mem()
 
         if not slots:
-            raise ValidationError("É obrigatório pelo menos uma Memória RAM.")
+            raise ValidationError(ERRO_MEMORIA_OBRIGATORIA)
         if slots > self.instance.placa_mae.slots_memoria:
-            raise ValidationError("Excedido limite dos slots de memória da Placa Mãe.")
+            raise ValidationError(ERRO_SLOTS_MEMORIA)
         if memoria > self.instance.placa_mae.memoria_suportaca:
-            raise ValidationError("Excedido limite de memória da Placa Mãe.")
+            raise ValidationError(ERRO_LIMITE_MEMORIA)
         return super().clean(*args, **kwargs)
 
 
@@ -64,6 +71,6 @@ class ComputadorForm(forms.ModelForm):
         placa_mae = self.cleaned_data.get("placa_mae", None)
         placa_video = self.cleaned_data.get("placa_video", None)
         if processador and placa_mae and not placa_mae.processadores_suportados.filter(pk=processador.pk).exists():
-            raise ValidationError("Placa Mãe não tem suporte para este processador.")
+            raise ValidationError(ERRO_PLACA_MAE_INCOMPATIVEL)
         if placa_mae and not placa_mae.video_integrado and not placa_video:
-            raise ValidationError("Placa de Vídeo obrigatória para esta Placa Mãe.")
+            raise ValidationError(ERRO_PLACA_VIDEO_OBRIGATORIA)

@@ -1,8 +1,14 @@
+import json
 from django.test import TestCase
 from django.urls import reverse_lazy
 from django.contrib.auth import get_user_model
 from produtos.models import Processador, PlacaMae, MemoriaRam, PlacaDeVideo
 from .models import Computador
+from .forms import (ERRO_MEMORIA_OBRIGATORIA,
+    ERRO_SLOTS_MEMORIA,
+    ERRO_LIMITE_MEMORIA,
+    ERRO_PLACA_MAE_INCOMPATIVEL,
+    ERRO_PLACA_VIDEO_OBRIGATORIA,)
 
 
 class PedidoAdminTest(TestCase):
@@ -96,7 +102,7 @@ class PedidoAdminTest(TestCase):
             reverse_lazy("admin:pedidos_computador_add"), data)
 
         self.assertFalse(Computador.objects.exists())
-        self.assertContains(response, "Placa Mãe não tem suporte para este processador.")
+        self.assertContains(response, ERRO_PLACA_MAE_INCOMPATIVEL)
 
     def test_nao_posso_montar_computador_sem_memoria_ram(self):
         data = {
@@ -114,7 +120,7 @@ class PedidoAdminTest(TestCase):
             reverse_lazy("admin:pedidos_computador_add"), data)
 
         self.assertFalse(Computador.objects.exists())
-        self.assertContains(response, "É obrigatório pelo menos uma Memória RAM.")
+        self.assertContains(response, ERRO_MEMORIA_OBRIGATORIA)
 
     def test_posso_adicionar_varias_memorias_do_mesmo_tamanho(self):
         data = {
@@ -160,7 +166,7 @@ class PedidoAdminTest(TestCase):
             reverse_lazy("admin:pedidos_computador_add"), data)
 
         self.assertFalse(Computador.objects.exists())
-        self.assertContains(response, "Excedido limite dos slots de memória da Placa Mãe.")
+        self.assertContains(response, ERRO_SLOTS_MEMORIA)
 
     def test_nao_posso_exceder_a_memoria_suportada(self):
         data = {
@@ -179,7 +185,7 @@ class PedidoAdminTest(TestCase):
             reverse_lazy("admin:pedidos_computador_add"), data)
 
         self.assertFalse(Computador.objects.exists())
-        self.assertContains(response, "Excedido limite de memória da Placa Mãe.")
+        self.assertContains(response, ERRO_LIMITE_MEMORIA)
 
     def test_placa_de_video_obrigatorio_quando_nao_possui_video_integrado(self):
         data = {
@@ -200,15 +206,103 @@ class PedidoAdminTest(TestCase):
             reverse_lazy("admin:pedidos_computador_add"), data)
 
         self.assertFalse(Computador.objects.exists())
-        self.assertContains(response, "Placa de Vídeo obrigatória para esta Placa Mãe.")
+        self.assertContains(response, ERRO_PLACA_VIDEO_OBRIGATORIA)
 
 
 class PedidoAPITest(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create_superuser(
+            "super_user", password="12#45678"
+        )
+        self.client.force_login(self.user)
+        self.processador_intel = Processador.objects.create(
+            descricao="Processador Intel Core i7",
+            marca=Processador.INTEL
+        )
+        self.processador_amd = Processador.objects.create(
+            descricao="Processador AMD Ryzen 7",
+            marca=Processador.AMD
+        )
+        self.placa_mae_suporte_intel = PlacaMae.objects.create(
+            descricao="Placa Mãe suporte Intel",
+            slots_memoria=2,
+            memoria_suportaca=32,
+            video_integrado=False
+        )
+        self.placa_mae_suporte_intel.processadores_suportados.add(
+            self.processador_intel
+        )
+        self.memoria_4gb = MemoriaRam.objects.create(
+            descricao="Memória RAM de Teste",
+            tamanho=4,
+        )
+        self.memoria_64gb = MemoriaRam.objects.create(
+            descricao="Memória RAM de Teste",
+            tamanho=64,
+        )
+        self.placa_video = PlacaDeVideo.objects.create(
+            descricao="Placa de Vídeo de Teste",
+        )
+
+    def reverse(self, name, *args):
+        return "http://testserver{path}".format(
+            path=reverse_lazy(name, args=args))
+
     def test_posso_montar_um_computador(self):
-        self.fail("Incompleto")
+        data = {
+            "cliente": self.reverse("user-detail", self.user.pk),
+            "processador": self.reverse(
+                "processador-detail", self.processador_intel.pk),
+            "placa_mae": self.reverse(
+                "placamae-detail", self.placa_mae_suporte_intel.pk),
+            "placa_video": self.reverse(
+                "placadevideo-detail", self.placa_video.pk),
+            "memoria": [{
+                "memoria": self.reverse(
+                    "memoriaram-detail", self.memoria_4gb.pk)
+            }]
+        }
+
+        response = self.client.post(
+            reverse_lazy("computador-list"),
+            data=json.dumps(data),
+            content_type="application/json"
+        )
+
+        computador = Computador.objects.get()
+        self.assertEqual(computador.cliente.pk, self.user.pk)
+        self.assertEqual(computador.processador.pk, self.processador_intel.pk)
+        self.assertEqual(computador.placa_mae.pk, self.placa_mae_suporte_intel.pk)
+        self.assertEqual(computador.placa_video.pk, self.placa_video.pk)
+        self.assertEqual(
+            list(computador.memoria.values_list("memoria__pk", flat=True)),
+            [self.memoria_4gb.pk]
+        )
 
     def test_nao_posso_escolher_uma_placa_nao_suportada(self):
-        self.fail("Incompleto")
+        data = {
+            "cliente": self.reverse("user-detail", self.user.pk),
+            "processador": self.reverse(
+                "processador-detail", self.processador_amd.pk),
+            "placa_mae": self.reverse(
+                "placamae-detail", self.placa_mae_suporte_intel.pk),
+            "placa_video": self.reverse(
+                "placadevideo-detail", self.placa_video.pk),
+            "memoria": [{
+                "memoria": self.reverse(
+                    "memoriaram-detail", self.memoria_4gb.pk)
+            }]
+        }
+
+        response = self.client.post(
+            reverse_lazy("computador-list"),
+            data=json.dumps(data),
+            content_type="application/json"
+        )
+
+        self.assertFalse(Computador.objects.exists())
+        self.assertContains(response, ERRO_PLACA_MAE_INCOMPATIVEL)
 
     def test_nao_posso_montar_computador_sem_memoria_ram(self):
         self.fail("Incompleto")

@@ -1,7 +1,14 @@
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets
-from .models import Computador
-from .serializers import ComputadorSerializer, UserSerializer
+from rest_framework import status
+from rest_framework.response import Response
+from .models import Computador, ComputadorMemoria
+from .serializers import ComputadorSerializer, UserSerializer, ComputadorMemoriaSerializer
+
+
+class ComputadorMemoriaViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ComputadorMemoria.objects.all()
+    serializer_class = ComputadorMemoriaSerializer
 
 
 class ComputadorViewSet(viewsets.ModelViewSet):

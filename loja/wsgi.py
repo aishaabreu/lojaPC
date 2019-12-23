@@ -17,7 +17,5 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'loja.settings')
 
 application = get_wsgi_application()
 application = WhiteNoise(
-    application,
-    root=settings.STATIC_ROOT,
-    prefix=settings.STATIC_ROOT.strip('/')
+    application, root=settings.STATIC_ROOT, prefix=settings.STATIC_URL
 )

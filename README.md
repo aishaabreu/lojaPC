@@ -3,9 +3,31 @@
 Sistema Loja com controle de montagem de computadores pelo cliente.
 
 # Iniciando
-Crie um usuario para gerenciar o sistema através do comando
+### Instale as dependencias
+```
+    pip install -r requirements.txt
+```
+
+### Definir as seguintes variáveis no ambiente
+```
+SECRET_KEY # Chave de criptografia do django
+DEBUG # Aplicacao iniciará em modo de debug ("True", "False")
+DATABASE_URL # URL de acesso ao banco de dados
+```
+
+### Prepare o banco para a aplicação
+```
+    python manage.py migrate
+```
+
+### Crie um usuário para gerenciar o sistema através do comando
 ```
     python manage.py createsuperuser
+```
+
+### Iniciando a aplicação
+```
+    python manage.py runserver
 ```
 
 # Administração

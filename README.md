@@ -1,6 +1,6 @@
 # Loja de Computadores
 
-Sistema de controle de montagem de computadores pelo cliente.
+Sistema Loja com controle de montagem de computadores pelo cliente.
 
 # Iniciando
 Crie um usuario para gerenciar o sistema através do comando
@@ -13,7 +13,7 @@ O cadastro de usuários e produtos é feito pela administração.
 Também é possível cadastrar uma montagem pela administração.
 
 ### /admin
-Acesso a administracao
+Acesso a administração
 
 # API do Sistema
 ## Produtos
@@ -73,7 +73,7 @@ Lista as placas de vídeo
 ```
 
 ## Usuários
-Os todos os clientes são usuários do sistema, os usuários podem ser cadastrados na administração
+Os todos os clientes são usuários do sistema, os usuários são cadastrados pela administração
 
 ### /api/usuario/
 Lista os usuários
@@ -93,7 +93,7 @@ Lista os usuários
 O computador pode ser montado e listado pela API ou pela administração
 
 ### /api/computador/
-Realiza e lista a monstagem de computadoes
+Lista a monstagem de computadores
 
 #### GET
 ```
@@ -115,7 +115,7 @@ Realiza e lista a monstagem de computadoes
 ```
 
 #### POST
-Exempode de uma requesição de montagem de um computador:
+Exemplo de uma requisição de montagem de um computador:
 ##### Enviado:
 ```
 {
